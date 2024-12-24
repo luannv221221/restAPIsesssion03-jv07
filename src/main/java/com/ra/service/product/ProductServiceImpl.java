@@ -1,7 +1,11 @@
 package com.ra.service.product;
+import com.ra.model.dto.product.ProductRequestDTO;
 import com.ra.model.dto.product.ProductResponseDTO;
 import com.ra.model.entity.Product;
+import com.ra.repository.CategoryRepository;
 import com.ra.repository.ProductRepository;
+import com.ra.service.UploadService;
+import com.ra.service.category.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +17,10 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService{
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private UploadService uploadService;
+    @Autowired
+    private CategoryService categoryService;
     @Override
     public List<ProductResponseDTO> findAll() {
 
@@ -38,8 +46,30 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public Product save(Product product) {
-        return productRepository.save(product);
+    public ProductResponseDTO save(ProductRequestDTO productDTO) {
+
+        // upload file
+        String fileName = uploadService.uploadFile(productDTO.getImage());
+
+        // convert từ DTO = > Entity
+        Product product = Product.builder()
+                .productName(productDTO.getProductName())
+                .price(productDTO.getPrice())
+                .image(fileName)
+                .status(productDTO.getStatus())
+                .category(categoryService.findById(productDTO.getCategoryId()))
+                .build();
+        Product productNew = productRepository.save(product);
+        // convert từ entity => DTO
+        return ProductResponseDTO.
+                builder()
+                .id(productNew.getId())
+                .productName(productNew.getProductName())
+                .image(productNew.getImage())
+                .price(productNew.getPrice())
+                .status(productNew.getStatus())
+                .categoryName(productNew.getCategory().getCategoryName())
+                .build();
     }
 
     @Override
