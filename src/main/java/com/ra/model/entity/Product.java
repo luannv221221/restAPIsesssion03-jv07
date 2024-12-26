@@ -24,6 +24,6 @@ public class Product {
     @Column(name = "status",nullable = false)
     private Boolean status;
     @ManyToOne
-    @JoinColumn(name = "category_id",referencedColumnName = "id")
+    @JoinColumn(name = "category_id")
     private Category category;
 }

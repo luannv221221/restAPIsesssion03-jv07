@@ -7,6 +7,9 @@ import com.ra.repository.ProductRepository;
 import com.ra.service.UploadService;
 import com.ra.service.category.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -39,7 +42,20 @@ public class ProductServiceImpl implements ProductService{
                 ).collect(Collectors.toList());
         return responseDTOS;
     }
-
+    @Override
+    public Page<ProductResponseDTO> pagination(Pageable pageable) {
+        List<Product> products = productRepository.findAll(pageable).getContent();
+        List<ProductResponseDTO> responseDTOS;
+        responseDTOS = products.stream().map(product -> ProductResponseDTO.builder()
+                .id(product.getId())
+                .productName(product.getProductName())
+                .price(product.getPrice())
+                .image(product.getImage())
+                .status(product.getStatus())
+                .categoryName(product.getCategory().getCategoryName())
+                .build()).collect(Collectors.toList());
+        return new PageImpl<>(responseDTOS, pageable, products.size());
+    }
     @Override
     public Product findById(Long id) {
         return productRepository.findById(id).orElse(null);
@@ -76,4 +92,6 @@ public class ProductServiceImpl implements ProductService{
     public void delete(Long id) {
         productRepository.deleteById(id);
     }
+
+
 }
